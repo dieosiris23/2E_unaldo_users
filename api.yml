@@ -1,0 +1,173 @@
+#Test with: http://editor.swagger.io/
+
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Microservice for Authentication
+  description: Ruby + MySQL
+  license:
+    name: Software Architecture 2018-I
+host: 192.168.99.101:4000
+basePath: /
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /auth/sign_in:
+    post:
+      summary: Creates a new session.
+      operationId: createSession
+      parameters:
+        - name: email, password
+          in: body
+          required: true
+          description: User Object.
+          schema:
+            $ref: '#/definitions/SessionInput'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Data'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+  /auth/validate_token:
+    get:
+      summary: Valida la sesion de usuario.
+      operationId: validateSession
+      parameters:
+        - name: access-token, client, uid
+          in: header
+          required: true
+          description: Token actual y cliente del uid de la sesion.
+          schema:
+            $ref: '#/definitions/Headers'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/LoginData'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+  /auth/sign_out:
+    delete:
+      summary: Closes User session.
+      operationId: deleteSession
+      parameters:
+        - name: user
+          in: header
+          required: true
+          description: current token and id.
+          schema:
+            $ref: '#/definitions/Headers'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Success'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+definitions:
+
+  User:
+    type: object
+    properties:
+      id:
+        type: integer
+      email:
+        type: string
+      provider:
+        type: string
+      name:
+        type: string
+      nickname:
+        type: string
+      image:
+        type: string
+
+  sessionData:
+    type: object
+    properties:
+      id:
+        type: integer
+      email:
+        type: string
+      name:
+        type: string
+      nickname:
+        type: string
+      image:
+        type: string
+      token:
+        type: string
+      type:
+        type: string
+      client:
+        type: string
+
+  # Sessions
+  Data:
+    type: object
+    properties:
+      data:
+        type: object
+        $ref: '#/definitions/User'
+
+  Success:
+    type: object
+    properties:
+      success:
+        type: boolean
+
+  SessionInput:
+    type: object
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+
+  Headers:
+    type: object
+    properties:
+      uid:
+        type: string
+      token:
+        type: string
+      client:
+        type: string
+
+# Errors
+  ErrorModel:
+    type: object
+    properties:
+      success:
+        type: boolean
+      errors:
+        type: array
+        items:
+          type: string
